@@ -508,6 +508,8 @@ def main(args):
     img_long_sizes = [512, 1024]
     valid_im_idx = imdb['valid_idx'][:] # valid image indices
     img_ids = imdb['image_ids'][:]
+    print (img_ids)
+    # raw_input()
     obj_data = filter_by_idx(obj_data, valid_im_idx)
     rel_data = filter_by_idx(rel_data, valid_im_idx)
     img_data = filter_by_idx(img_data, valid_im_idx)
@@ -562,7 +564,7 @@ def main(args):
     print(predicate_token_counter)
 
     # write the h5 file
-    f = h5.File(args.h5_file, 'w')
+    f = h5.File(args.h5_file , 'w')
 
     # encode object
     encoded_label, encoded_boxes, im_to_first_obj, im_to_last_obj = \
@@ -615,16 +617,19 @@ def main(args):
 
 
 if __name__ == '__main__':
+
+    VG_path = '/2t/jackyyeh/dataset/VisualGenome/'
+
     parser = argparse.ArgumentParser()
-    parser.add_argument('--imdb', default='VG/imdb_1024.h5', type=str)
-    parser.add_argument('--object_input', default='VG/objects.json', type=str)
-    parser.add_argument('--relationship_input', default='VG/relationships.json', type=str)
-    parser.add_argument('--metadata_input', default='VG/image_data.json', type=str)
+    parser.add_argument('--imdb', default=VG_path+'imdb_1024.h5', type=str)
+    parser.add_argument('--object_input', default=VG_path+'objects.json', type=str)
+    parser.add_argument('--relationship_input', default=VG_path+'relationships.json', type=str)
+    parser.add_argument('--metadata_input', default=VG_path+'image_data.json', type=str)
     parser.add_argument('--object_alias', default='VG/object_alias.txt', type=str)
     parser.add_argument('--pred_alias', default='VG/predicate_alias.txt', type=str)
-    parser.add_argument('--object_list', default='VG/object_list.txt', type=str)
+    parser.add_argument('--object_list', default='VG/object_839_list.txt', type=str)
     parser.add_argument('--pred_list', default='VG/predicate_list.txt', type=str)
-    parser.add_argument('--num_objects', default=150, type=int, help="set to 0 to disable filtering")
+    parser.add_argument('--num_objects', default=1600, type=int, help="set to 0 to disable filtering")
     parser.add_argument('--num_predicates', default=50, type=int, help="set to 0 to disable filtering")
     parser.add_argument('--min_box_area_frac', default=0.002, type=float)
     parser.add_argument('--json_file', default='VG-dicts.json')
@@ -634,6 +639,10 @@ if __name__ == '__main__':
     parser.add_argument('--train_frac', default=0.7, type=float)
     parser.add_argument('--val_frac', default=0.7, type=float)
     parser.add_argument('--shuffle', default=False, type=bool)
+    # parser.add_argument('--mode', type=str)
 
     args = parser.parse_args()
+
+    # assert args.mode in ['train', 'val', 'test']
+
     main(args)

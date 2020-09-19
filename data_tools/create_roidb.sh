@@ -4,13 +4,14 @@ set -e
 
 OUT_PATH="."
 
-N_OBJ=150 # number of object categories
+N_OBJ=839 # number of object categories
 N_REL=50 # number of relationship categories
 
-H5=VG-SGG.h5
-JSON=VG-SGG-dicts.json
+H5=VG-SGG_839.h5
+JSON=VG-SGG-dicts_839.json
 FRAC=1
 IMDB=imdb_1024.h5
+
 
 python vg_to_roidb.py \
     --imdb $IMDB \
@@ -18,4 +19,4 @@ python vg_to_roidb.py \
     --h5_file $OUT_PATH/$H5 \
     --load_frac $FRAC \
     --num_objects $N_OBJ \
-    --num_predicates $N_REL \
+    --num_predicates $N_REL 

@@ -7,6 +7,7 @@ from threading import Thread, Lock
 import h5py
 import numpy as np
 from scipy.misc import imread, imresize
+import pickle
 
 def build_filename_dict(data):
     # First make sure all basenames are unique
@@ -35,6 +36,10 @@ def encode_filenames(data, filename_to_idx):
 def add_images(im_data, h5_file, args):
     fns = []; ids = []; idx = []
     corrupted_ims = ['1592.jpg', '1722.jpg', '4616.jpg', '4617.jpg']
+    # corrupted_ims = []
+
+    id2idx = {}
+    id2filename = {}
     for i, img in enumerate(im_data):
         basename =  str(img['image_id']) + '.jpg'
         if basename in corrupted_ims:
@@ -46,6 +51,16 @@ def add_images(im_data, h5_file, args):
             ids.append(img['image_id'])
             idx.append(i)
 
+            # id2idx[img['image_id']] = i
+            # id2filename[img['image_id']] = filename
+
+    # with open(args.image_ids, 'r') as f:
+    #     img_ids = json.load(f)
+
+    # idx = [id2idx[img_id] for img_id in img_ids]
+    # fns = [id2filename[img_id] for img_id in img_ids]
+    # ids = np.array(img_ids, dtype=np.int32)
+    
     ids = np.array(ids, dtype=np.int32)
     idx = np.array(idx, dtype=np.int32)
     h5_file.create_dataset('image_ids', data=ids)
@@ -69,14 +84,19 @@ def add_images(im_data, h5_file, args):
         while True:
             i, filename = q.get()
 
-            if i % 10000 == 0:
+            if i % 1000 == 0:
                 print('processing %i images...' % i)
             img = imread(filename)
             # handle grayscale
             if img.ndim == 2:
                 img = img[:, :, None][:, :, [0, 0, 0]]
             H0, W0 = img.shape[0], img.shape[1]
+            
+            # image resize
             img = imresize(img, float(args.image_size) / max(H0, W0))
+
+            # img = imresize(img, float(args.image_size) / min(H0, W0))
+
             H, W = img.shape[0], img.shape[1]
             # swap rgb to bgr. This can't be the best way right? #fail
             r = img[:,:,0].copy()
@@ -88,7 +108,10 @@ def add_images(im_data, h5_file, args):
             original_widths[i] = W0
             image_heights[i] = H
             image_widths[i] = W
+
+            # where error comes from
             image_dset[i, :, :H, :W] = img.transpose(2, 0, 1)
+            
             lock.release()
             q.task_done()
 
@@ -118,11 +141,14 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--image_dir', default='VG/images')
+    parser.add_argument('--image_dir', default='/2t/jackyyeh/dataset/VG/')
     parser.add_argument('--image_size', default=1024, type=int)
     parser.add_argument('--imh5_dir', default='.')
     parser.add_argument('--num_workers', default=20, type=int)
-    parser.add_argument('--metadata_input', default='VG/image_data.json', type=str)
+    parser.add_argument('--metadata_input', default='/2t/jackyyeh/dataset/VisualGenome/image_data.json', type=str)
+
+    # parser.add_argument('--image_ids', default='VG/image_ids/test_imgs_ids.json', type=str)
+    # parser.add_argument('--image_ids', default='VG/image_ids/sg_imgs_ids.json', type=str)
 
     args = parser.parse_args()
     main(args)
